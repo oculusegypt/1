@@ -6,69 +6,81 @@ id = "WlqOHSZfi6Nlp17WG5UHR"
 uri = "file://README.md"
 type = "text"
 title = "README.md — وصف GitHub مع اللقطات"
+logical_id = "ed06875a-3a80-4b84-b9a5-d7cf5d1c59c0"
 
 [[outputs]]
 id = "bUBO6mXbOgZ8J5uegHKYI"
 uri = "file://store-listing.md"
 type = "text"
 title = "store-listing.md — وصف Google Play & App Store"
+logical_id = "8c970602-34e7-414c-bd2f-925536307a77"
 
 [[outputs]]
 id = "RAJPFYfFWshgZLEgI7iea"
 uri = "file://screenshots/mobile/01-home.png"
 type = "image"
 title = "لقطة: الرئيسية (جوال)"
+logical_id = "0fbd0215-7679-4ef1-859f-04491080129b"
 
 [[outputs]]
 id = "xO5jIxS8HTkvLcAfAQAno"
 uri = "file://screenshots/mobile/03-sos.png"
 type = "image"
 title = "لقطة: وضع الطوارئ SOS (جوال)"
+logical_id = "6310a150-1d9e-44c5-8c4c-31f9226cc252"
 
 [[outputs]]
 id = "Am_alaU_3takY6eWICPKw"
 uri = "file://screenshots/mobile/06-zakiy.png"
 type = "image"
 title = "لقطة: زكي AI (جوال)"
+logical_id = "fd5ac9d2-222d-459f-810f-63c165dd2c49"
 
 [[outputs]]
 id = "NuhMcHpj7NMmgSFz6E8Ys"
 uri = "file://screenshots/mobile/04-dhikr.png"
 type = "image"
 title = "لقطة: الذكر (جوال)"
+logical_id = "ba75dd77-e911-4e9b-a2a3-7107004364af"
 
 [[outputs]]
 id = "5oTSRZc0jnu0KWEGqFkSO"
 uri = "file://screenshots/mobile/07-progress.png"
 type = "image"
 title = "لقطة: التقدم (جوال)"
+logical_id = "11e5a2dd-9e7f-46f4-83a9-371be7816c7f"
 
 [[outputs]]
 id = "lQqoC6SwAn4V26NiD9vHX"
 uri = "file://screenshots/mobile/09-dhikr-rooms.png"
 type = "image"
 title = "لقطة: غرف الذكر (جوال)"
+logical_id = "97f735f7-7d99-4e33-8ed7-792463036755"
 
 [[outputs]]
 id = "GMV6uQgKfPvkt1BVj48LH"
 uri = "file://screenshots/desktop/01-home.png"
 type = "image"
 title = "لقطة: الرئيسية (سطح المكتب)"
+logical_id = "1068082e-5001-46ad-84e1-ae23f2cfa3fe"
 
 [[outputs]]
 id = "y8ThfmAgx9ZqhRYm0JHFX"
 uri = "file://screenshots/desktop/06-zakiy.png"
 type = "image"
 title = "لقطة: زكي AI (سطح المكتب)"
+logical_id = "02c710db-fc5c-4cd6-b774-09f86eef56df"
 
 [[outputs]]
 id = "QSBrElWHDCMSpLg6BKe_m"
 uri = "file://zakiy_full_analysis.md"
 type = "text"
 title = "تشريح الزكي الكامل — وثيقة التحويل لـ Expo"
+logical_id = "728f69d8-b697-4354-b5fb-2783e8fdf702"
 
 [[outputs]]
 id = "cB1Gh-ptEdOF1Yle4oV4V"
 uri = "file://tawbah-web-apk.zip"
 type = "unspecified"
 title = "دليل التوبة — Web APK (Capacitor – 21 MB)"
+logical_id = "3ae05823-dd4e-4ac4-a531-eef3b899f444"

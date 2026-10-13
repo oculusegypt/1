@@ -1,0 +1,1 @@
+- [Worklets on Expo web](worklets-web-init.md) — keep the web-only platform-checker override; module evaluation order otherwise selects native serialization.

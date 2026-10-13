@@ -11,6 +11,23 @@ const config = getDefaultConfig(projectRoot);
 
 config.resolver.unstable_enablePackageExports = true;
 
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const resolution = context.resolveRequest(context, moduleName, platform);
+  if (
+    platform === 'web' &&
+    resolution.type === 'sourceFile' &&
+    /\/react-native-worklets\/(?:lib\/module|src)\/PlatformChecker\/index\.(?:js|ts)$/.test(
+      resolution.filePath,
+    )
+  ) {
+    return {
+      type: 'sourceFile',
+      filePath: path.join(projectRoot, 'src/polyfills/worklets-platform-checker.js'),
+    };
+  }
+  return resolution;
+};
+
 config.resolver.blockList = [
   /node_modules\/expo-asset_tmp_[^/]+\/.*/,
   /node_modules\/.*_tmp_[^/]+\/.*/,

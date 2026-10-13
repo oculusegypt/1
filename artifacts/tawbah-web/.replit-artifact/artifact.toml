@@ -28,4 +28,5 @@ to = "/index.html"
 
 [services.env]
 PORT = "20251"
+VITE_PORT = "20251"
 BASE_PATH = "/"
