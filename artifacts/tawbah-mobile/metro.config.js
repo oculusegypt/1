@@ -40,7 +40,7 @@ config.server = {
   enhanceMiddleware: (metroMiddleware) => {
     return (req, res, next) => {
       if (req.url && req.url.startsWith('/api/')) {
-        const apiPort = 8080;
+        const apiPort = 3001;
         const options = {
           hostname: 'localhost',
           port: apiPort,
