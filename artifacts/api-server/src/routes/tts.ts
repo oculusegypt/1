@@ -59,8 +59,8 @@ router.post("/tts", async (req, res) => {
     res.setHeader("Content-Length", audioBuffer.length);
     res.setHeader("Cache-Control", "public, max-age=86400");
     res.send(audioBuffer);
-  } catch (err) {
-    console.error("TTS error:", err);
+  } catch {
+    console.error("TTS request failed");
     res.status(500).json({ error: "Failed to generate audio" });
   }
 });

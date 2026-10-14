@@ -1,4 +1,4 @@
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { generateText } from "../lib/ai-providers.js";
 import type { UnifiedTask } from "./task-engine.js";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -209,19 +209,11 @@ ${repetitionNote}
 لا تبدأ بـ "أنا" أو "الزكي". لا تذكر اسم التطبيق.
 الرسالة موجهة مباشرة للمستخدم.`;
 
-  // Guard: openai getter throws synchronously if integration is not configured
-  let aiCall: Promise<string>;
-  try {
-    aiCall = openai.chat.completions
-      .create({
-        model: "gpt-4o",
-        max_completion_tokens: 120,
-        messages: [{ role: "user", content: prompt }],
-      })
-      .then((r) => r.choices[0]?.message?.content?.trim() ?? "");
-  } catch {
-    return FALLBACK_MESSAGES[decisionType];
-  }
+  const aiCall = generateText({
+    maxTokens: 120,
+    timeoutMs: AI_TIMEOUT_MS,
+    messages: [{ role: "user", content: prompt }],
+  }).then((text) => text.trim());
 
   const result = await withTimeout(aiCall, FALLBACK_MESSAGES[decisionType], AI_TIMEOUT_MS);
   return result || FALLBACK_MESSAGES[decisionType];
@@ -276,8 +268,8 @@ export async function decide(ctx: ZakiyContext): Promise<ZakiyDecision> {
     });
 
     return validated;
-  } catch (err) {
-    console.error("[ZAKIY] decide() failed — returning safe fallback:", err);
+  } catch {
+    console.error("[ZAKIY] decide() failed — returning safe fallback");
     return { ...SAFE_FALLBACK };
   }
 }

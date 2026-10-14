@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { generateText } from "../lib/ai-providers.js";
 import { db } from "@workspace/db";
 import { hadiTaskGroupsTable, hadiTaskItemsTable } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -14,9 +14,8 @@ router.post("/hadi-tasks/extract", async (req, res) => {
       return;
     }
 
-    const extractionResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 400,
+    const raw = await generateText({
+      maxTokens: 400,
       messages: [
         {
           role: "system",
@@ -36,10 +35,8 @@ router.post("/hadi-tasks/extract", async (req, res) => {
           content: text.slice(0, 2000),
         },
       ],
-      response_format: { type: "json_object" },
     });
 
-    const raw = extractionResponse.choices[0]?.message?.content ?? "{}";
     let parsed: { title?: string; tasks?: string[] } = {};
     try { parsed = JSON.parse(raw); } catch { parsed = {}; }
 
@@ -76,8 +73,8 @@ router.post("/hadi-tasks/extract", async (req, res) => {
         orderIdx: item.orderIdx,
       })),
     });
-  } catch (err) {
-    console.error("Hadi tasks extract error:", err);
+  } catch {
+    console.error("Hadi tasks extraction failed");
     res.status(500).json({ error: "Failed to extract tasks" });
   }
 });

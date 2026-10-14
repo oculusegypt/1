@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { speechToText, ensureCompatibleFormat } from "@workspace/integrations-openai-ai-server/audio";
+import { generateText } from "../lib/ai-providers.js";
 import { db } from "@workspace/db";
 import {
   userProgressTable,
@@ -956,17 +956,14 @@ ${sinListText}
   "explanation": "جملة قصيرة جداً تصف ما فهمته من الوصف"
 }`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-      max_completion_tokens: 512,
+    const raw = await generateText({
+      maxTokens: 512,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userText },
       ],
-      response_format: { type: "json_object" },
     });
 
-    const raw = completion.choices[0]?.message?.content ?? "{}";
     let parsed: { matchedIds?: string[]; transcription?: string; explanation?: string } = {};
     try { parsed = JSON.parse(raw); } catch {}
 
@@ -978,8 +975,8 @@ ${sinListText}
       transcription: parsed.transcription ?? userText,
       explanation: parsed.explanation ?? "",
     });
-  } catch (err) {
-    console.error("Detect sins error:", err);
+  } catch {
+    console.error("Detect sins request failed");
     res.status(500).json({ error: "فشل في تحليل الوصف" });
   }
 });

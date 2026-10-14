@@ -57,8 +57,8 @@ export async function generateZakiyAudio(text: string, voiceProfileId?: string):
       "wav"
     );
     return audioBuffer.toString("base64");
-  } catch (err) {
-    console.error("[Zakiy TTS] Failed to generate audio:", err);
+  } catch {
+    console.error("[Zakiy TTS] Audio generation failed");
     return "";
   }
 }

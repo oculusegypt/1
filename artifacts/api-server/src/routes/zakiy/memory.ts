@@ -1,4 +1,4 @@
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { generateText } from "../../lib/ai-providers.js";
 import { db } from "@workspace/db";
 import { zakiyMemoryTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
@@ -23,9 +23,8 @@ export async function updateMemory(
 ): Promise<void> {
   if (!sessionId) return;
   try {
-    const extraction = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 400,
+    const extraction = await generateText({
+      maxTokens: 400,
       messages: [
         {
           role: "system",
@@ -59,7 +58,7 @@ ${JSON.stringify(currentMemory, null, 2)}
       ],
     });
 
-    const raw = extraction.choices[0]?.message?.content ?? "{}";
+    const raw = extraction;
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return;
     const newMemory = JSON.parse(jsonMatch[0]) as ZakiyMemoryData;

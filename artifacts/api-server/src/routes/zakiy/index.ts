@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { speechToText, ensureCompatibleFormat } from "@workspace/integrations-openai-ai-server/audio";
+import { generateText, hasTextAIProviderConfigured } from "../../lib/ai-providers.js";
 import { db } from "@workspace/db";
 import { zakiyMemoryTable, journalEntriesTable, userProgressTable, notificationSettingsTable } from "@workspace/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -17,11 +17,7 @@ export type { ServerResponseSegment } from "./types.js";
 const router: IRouter = Router();
 
 function hasTextAiCredentials(): boolean {
-  return Boolean(
-    (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL &&
-      process.env.AI_INTEGRATIONS_OPENAI_API_KEY) ||
-      process.env.OPENAI_API_KEY,
-  );
+  return hasTextAIProviderConfigured();
 }
 
 // ══════════════════════════════════════════
@@ -59,8 +55,8 @@ router.post("/zakiy/message", async (req, res) => {
     }
 
     res.json({ response: responseText, segments });
-  } catch (err) {
-    console.error("Zakiy message error:", err);
+  } catch {
+    console.error("Zakiy message request failed");
     res.status(500).json({ error: "Failed to generate response" });
   }
 });
@@ -74,8 +70,8 @@ router.post("/zakiy/tts", async (req, res) => {
     }
     const segments = await generateSegmentedAudio(text, voiceProfile);
     res.json({ segments });
-  } catch (err) {
-    console.error("Zakiy TTS error:", err);
+  } catch {
+    console.error("Zakiy TTS request failed");
     res.status(500).json({ error: "Failed to generate audio" });
   }
 });
@@ -92,9 +88,8 @@ router.post("/zakiy/suggestions", async (req, res) => {
 
     const lastExchange = history.slice(-4).map((m) => `${m.role === "user" ? "المستخدم" : "الزكي"}: ${m.content}`).join("\n");
 
-    const result = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 200,
+    const raw = await generateText({
+      maxTokens: 200,
       messages: [
         {
           role: "system",
@@ -112,13 +107,12 @@ ${memorySection}
       ],
     });
 
-    const raw = result.choices[0]?.message?.content ?? '{"suggestions":[]}';
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { suggestions: [] };
 
     res.json({ suggestions: parsed.suggestions ?? [] });
-  } catch (err) {
-    console.error("Suggestions error:", err);
+  } catch {
+    console.error("Zakiy suggestions request failed");
     res.json({ suggestions: [] });
   }
 });
@@ -137,9 +131,8 @@ router.post("/zakiy/impression", async (req, res) => {
       .map((m) => `${m.role === "user" ? "المستخدم" : "الزكي"}: ${m.content.slice(0, 100)}`)
       .join("\n");
 
-    const result = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 300,
+    const raw = await generateText({
+      maxTokens: 300,
       messages: [
         {
           role: "system",
@@ -164,10 +157,10 @@ ${JSON.stringify(memory, null, 2)}
       ],
     });
 
-    const impression = result.choices[0]?.message?.content ?? "لسه بتعرف بعضنا — كمّل الحديث وهشوفك أكتر!";
+    const impression = raw || "لسه بتعرف بعضنا — كمّل الحديث وهشوفك أكتر!";
     res.json({ impression });
-  } catch (err) {
-    console.error("Impression error:", err);
+  } catch {
+    console.error("Zakiy impression request failed");
     res.status(500).json({ error: "Failed to generate impression" });
   }
 });
@@ -204,8 +197,8 @@ router.post("/zakiy/voice", async (req, res) => {
     }
 
     res.json({ transcript, response: responseText, segments });
-  } catch (err) {
-    console.error("Zakiy voice error:", err);
+  } catch {
+    console.error("Zakiy voice request failed");
     res.status(500).json({ error: "Failed to process voice message" });
   }
 });
@@ -278,16 +271,14 @@ ${recentJournals.map((j) => `- المزاج: ${j.mood ?? "غير محدد"} | ا
   "warningSign": "العلامة الأبرز التي تدل على الخطر (إن وجدت، وإلا null)"
 }`;
 
-    const analysis = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 200,
+    const raw = await generateText({
+      maxTokens: 200,
       messages: [
         { role: "system", content: analysisPrompt },
         { role: "user", content: "حلّل وأرجع النتيجة" },
       ],
     });
 
-    const raw = analysis.choices[0]?.message?.content ?? "{}";
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     const result = jsonMatch ? JSON.parse(jsonMatch[0]) : { riskLevel: "low", message: "", warningSign: null };
 
@@ -297,8 +288,8 @@ ${recentJournals.map((j) => `- المزاج: ${j.mood ?? "غير محدد"} | ا
       : { level: riskLevel as "medium" | "high", message: result.message ?? "", sign: result.warningSign ?? null };
 
     res.json({ ...result, risk });
-  } catch (err) {
-    console.error("Risk check error:", err);
+  } catch {
+    console.error("Zakiy risk check failed");
     res.json({ riskLevel: "low", message: "", warningSign: null, risk: null });
   }
 });
@@ -348,15 +339,14 @@ router.get("/zakiy/anniversary", async (req, res) => {
 أسلوبك: دافئ وصادق كالأخ الأكبر، ليس رسمياً.
 لا تبدأ بـ "أنا" ولا بـ "الزكي".`;
 
-    const msgResp = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_completion_tokens: 200,
+    const messageText = await generateText({
+      maxTokens: 200,
       messages: [
         { role: "user", content: msgPrompt },
       ],
     });
 
-    const message = msgResp.choices[0]?.message?.content?.trim() ?? "";
+    const message = messageText.trim();
 
     res.json({
       anniversary: {
@@ -366,8 +356,8 @@ router.get("/zakiy/anniversary", async (req, res) => {
         message,
       },
     });
-  } catch (err) {
-    console.error("Anniversary check error:", err);
+  } catch {
+    console.error("Zakiy anniversary check failed");
     res.json({ anniversary: null });
   }
 });
@@ -498,8 +488,8 @@ router.post("/zakiy/decide", async (req, res) => {
       riskScore: risk.score,
       riskTriggers: risk.triggers,
     });
-  } catch (err) {
-    console.error("[zakiy/decide]", err);
+  } catch {
+    console.error("[zakiy/decide] request failed");
     res.json({
       message: "ابدأ بحاجة بسيطة… ذكر خفيف هيظبطك.",
       action: { type: "redirect", target: "/dhikr" },

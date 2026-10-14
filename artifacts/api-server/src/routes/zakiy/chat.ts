@@ -1,4 +1,4 @@
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { generateText } from "../../lib/ai-providers.js";
 import type { ZakiyMemoryData } from "./types.js";
 import { buildZakiySystemPrompt } from "./prompts.js";
 
@@ -14,11 +14,8 @@ export async function generateZakiyResponse(
     { role: "user", content: userMessage },
   ];
 
-  const chatResponse = await openai.chat.completions.create({
-    model: "gpt-4o",
-    max_completion_tokens: 900,
+  return generateText({
+    maxTokens: 900,
     messages,
   });
-
-  return chatResponse.choices[0]?.message?.content ?? "";
 }

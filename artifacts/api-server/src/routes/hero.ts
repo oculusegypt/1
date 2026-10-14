@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { generateText } from "../lib/ai-providers.js";
 
 const router: IRouter = Router();
 
@@ -117,17 +117,14 @@ ${dayFadhail ? `- فضيلة اليوم: ${dayFadhail}` : ""}
 - أعد JSON فقط، بدون أي نص إضافي`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 800,
-      response_format: { type: "json_object" },
+    const raw = await generateText({
+      maxTokens: 800,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: "أعد المحتوى الآن." },
       ],
     });
 
-    const raw = completion.choices[0]?.message?.content ?? "{}";
     let items: HeroContentItem[] = [];
     try {
       const parsed = JSON.parse(raw) as { items?: HeroContentItem[] } | HeroContentItem[];

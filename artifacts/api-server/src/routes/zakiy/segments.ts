@@ -146,8 +146,8 @@ export async function generateSegmentedAudio(responseText: string, voiceProfileI
       try {
         const audio = await generateZakiyAudio(seg.text, voiceProfileId);
         return { segIdx, audio };
-      } catch (err) {
-        console.error(`TTS failed for segment ${segIdx}:`, err);
+      } catch {
+        console.error(`[Zakiy TTS] Audio generation failed for segment ${segIdx}`);
         return { segIdx, audio: "" };
       }
     })
