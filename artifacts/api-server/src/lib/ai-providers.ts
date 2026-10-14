@@ -165,7 +165,7 @@ function getFailureDetails(error: unknown): {
 export async function generateText({
   messages,
   maxTokens,
-  timeoutMs = 36_000,
+  timeoutMs = 60_000,
 }: CompletionOptions): Promise<string> {
   const providers = getProviders();
   if (providers.length === 0) throw new AIProvidersUnavailableError();
@@ -180,7 +180,7 @@ export async function generateText({
         provider,
         messages,
         maxTokens,
-        Math.min(12_000, remainingMs),
+        Math.min(20_000, remainingMs),
       );
     } catch (error) {
       const details = getFailureDetails(error);
