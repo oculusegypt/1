@@ -119,6 +119,7 @@ async function requestProvider(
           model: provider.model,
           messages,
           max_tokens: maxTokens,
+          ...(provider.id === "qwen" ? { reasoning_effort: "none" } : {}),
         }),
         signal: controller.signal,
       },
