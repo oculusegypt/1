@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.60.0",
-    "expo": "~54.0.33",
+    "expo": "~57.0.28",
     "isomorphic-git": "^1.29.0",
     "playwright-core": "^1.58.2"
   }

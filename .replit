@@ -81,3 +81,27 @@ PORT = "3001"
 DASHSCOPE_FREE_QUOTA_ONLY_CONFIRMED = "true"
 DASHSCOPE_BASE_URL = "https://ws-ug1fsmrwphwa3o5p.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
 GLM_API_BASE_URL = "https://open.bigmodel.cn/api/paas/v4"
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 20251
+externalPort = 80
+
+[[ports]]
+localPort = 24800
+externalPort = 3000
