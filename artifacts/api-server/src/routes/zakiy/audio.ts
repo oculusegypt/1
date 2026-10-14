@@ -1,6 +1,3 @@
-import { textToSpeech } from "@workspace/integrations-openai-ai-server/audio";
-import { VOICE_PROFILES, DEFAULT_VOICE_PROFILE } from "./prompts.js";
-
 export function stripQuranMarkers(text: string): string {
   return text
     .replace(/\{\{quran:\d+:\d+(?:-\d+)?\|[^}]*\}\}/g, "")
@@ -40,25 +37,9 @@ export function stripEmojisAndSymbols(text: string): string {
 }
 
 /**
- * Generate TTS audio for a text segment using OpenAI's audio model.
- * Returns base64-encoded WAV audio string, or "" on failure.
+ * Audio synthesis runs on the client through the device/browser speech engine.
+ * Paid voice APIs are not available on the connected free-tier account.
  */
-export async function generateZakiyAudio(text: string, voiceProfileId?: string): Promise<string> {
-  const profileId = voiceProfileId ?? DEFAULT_VOICE_PROFILE;
-  const profile = VOICE_PROFILES[profileId] ?? VOICE_PROFILES[DEFAULT_VOICE_PROFILE]!;
-
-  const cleanText = stripEmojisAndSymbols(stripStageDirections(stripForTTS(text)));
-  if (!cleanText.trim()) return "";
-
-  try {
-    const audioBuffer = await textToSpeech(
-      `${profile.system}\n\n${cleanText}`,
-      profile.voice as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer",
-      "wav"
-    );
-    return audioBuffer.toString("base64");
-  } catch {
-    console.error("[Zakiy TTS] Audio generation failed");
-    return "";
-  }
+export async function generateZakiyAudio(_text: string, _voiceProfileId?: string): Promise<string> {
+  return "";
 }

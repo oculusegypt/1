@@ -9,9 +9,10 @@ import Animated, {
   withRepeat, withSequence, withTiming, withSpring,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import * as Speech from "expo-speech";
 import { useRouter } from "expo-router";
 import {
-  ChevronRight, Send, Mic, MicOff, Settings2, AlertTriangle, X, Sparkles,
+  ChevronRight, Send, Mic, MicOff, Settings2, AlertTriangle, X, Sparkles, Volume2, Pause,
 } from "lucide-react-native";
 import { useSettings } from "@/providers/SettingsProvider";
 import { useColors } from "@/hooks/useColors";
@@ -20,6 +21,21 @@ import type { Message } from "@/engines/zakiy/types";
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
+}
+
+function getSpeakableText(msg: Message): string {
+  const speechSegments = msg.segments?.filter(
+    (segment) => segment.type === "text" || segment.type === "quran"
+  );
+  const source = speechSegments?.length
+    ? speechSegments.map((segment) => segment.text).join(" ")
+    : msg.text;
+
+  return source
+    .replace(/\{\{(?:quran|fatwa|promise|surah-link):[^}]*\}\}/g, " ")
+    .replace(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 function MessageBubble({
@@ -32,6 +48,34 @@ function MessageBubble({
   c: ReturnType<typeof useColors>;
 }) {
   const isUser = msg.role === "user";
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const speechText = isUser ? "" : getSpeakableText(msg);
+
+  useEffect(() => {
+    if (!isSpeaking) return;
+    return () => { void Speech.stop(); };
+  }, [isSpeaking]);
+
+  const toggleSpeech = useCallback(async () => {
+    if (!speechText) return;
+    try {
+      await Speech.stop();
+      if (isSpeaking) {
+        setIsSpeaking(false);
+        return;
+      }
+      setIsSpeaking(true);
+      Speech.speak(speechText, {
+        language: "ar-EG",
+        rate: 0.96,
+        onDone: () => setIsSpeaking(false),
+        onStopped: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    } catch {
+      setIsSpeaking(false);
+    }
+  }, [isSpeaking, speechText]);
 
   return (
     <Animated.View
@@ -71,6 +115,28 @@ function MessageBubble({
         >
           {msg.text}
         </Text>
+
+        {!isUser && speechText ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={isSpeaking ? "إيقاف صوت الرد" : "تشغيل صوت الرد"}
+            testID={`zakiy-speech-${msg.id}`}
+            onPress={() => { void toggleSpeech(); }}
+            style={({ pressed }) => ({
+              alignSelf: "flex-end",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 40,
+              minHeight: 40,
+              padding: 8,
+              opacity: pressed ? 0.65 : 1,
+            })}
+          >
+            {isSpeaking
+              ? <Pause size={17} color={c.primary} />
+              : <Volume2 size={17} color={c.textMuted} />}
+          </Pressable>
+        ) : null}
 
         {msg.suggestions && msg.suggestions.length > 0 && (
           <View style={{ marginTop: 10, gap: 6 }}>

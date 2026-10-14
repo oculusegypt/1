@@ -32,6 +32,7 @@ export function BotMessageBody({
   const [isPlaying, setIsPlaying] = useState(false);
   const autoStartedRef = useRef(false);
   const textAudioRefs = useRef<Record<number, HTMLAudioElement>>({});
+  const nativeSpeechRef = useRef<{ index: number; utterance: SpeechSynthesisUtterance } | null>(null);
   const segments = msg.segments ?? [];
 
   const advanceTo = useCallback((nextIdx: number) => {
@@ -51,9 +52,11 @@ export function BotMessageBody({
 
   useEffect(() => {
     if (!isAutoPlayTarget || autoStartedRef.current) return;
-    const hasTextAudio = segments.some(s => s.type === "text" && s.audioBase64);
+    const hasSpeakableText = segments.some(
+      s => s.type === "text" && (Boolean(s.audioBase64) || Boolean(s.text.trim()))
+    );
     const hasQuran = segments.some(s => s.type === "quran");
-    const shouldStart = (autoPlayBotAudio && hasTextAudio) || (autoPlayQuran && hasQuran);
+    const shouldStart = (autoPlayBotAudio && hasSpeakableText) || (autoPlayQuran && hasQuran);
     if (!shouldStart) {
       onAudioComplete();
       return;
@@ -68,10 +71,66 @@ export function BotMessageBody({
   }, [advanceTo]);
 
   useEffect(() => {
-    if (playIdx === -1 || !isPlaying) return;
+    if (playIdx === -1) {
+      if (nativeSpeechRef.current && typeof window !== "undefined") {
+        window.speechSynthesis?.cancel();
+        nativeSpeechRef.current = null;
+      }
+      return;
+    }
+
     const seg = segments[playIdx];
-    if (!seg || seg.type !== "text") return;
-    if (!seg.audioBase64) { handleSegmentEnd(playIdx); return; }
+    if (!seg || seg.type !== "text") {
+      if (nativeSpeechRef.current && typeof window !== "undefined") {
+        window.speechSynthesis?.cancel();
+        nativeSpeechRef.current = null;
+      }
+      return;
+    }
+
+    if (!seg.audioBase64) {
+      const speechSynthesis = typeof window !== "undefined" ? window.speechSynthesis : undefined;
+      if (!speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") {
+        if (isPlaying) handleSegmentEnd(playIdx);
+        return;
+      }
+
+      const activeSpeech = nativeSpeechRef.current;
+      if (!isPlaying) {
+        if (activeSpeech?.index === playIdx) speechSynthesis.pause();
+        return;
+      }
+      if (activeSpeech?.index === playIdx) {
+        if (speechSynthesis.paused) speechSynthesis.resume();
+        return;
+      }
+
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(seg.text);
+      utterance.lang = "ar-EG";
+      const arabicVoice = speechSynthesis.getVoices().find(voice =>
+        voice.lang.toLowerCase().startsWith("ar")
+      );
+      if (arabicVoice) utterance.voice = arabicVoice;
+
+      nativeSpeechRef.current = { index: playIdx, utterance };
+      const finishSpeech = () => {
+        if (nativeSpeechRef.current?.utterance !== utterance) return;
+        nativeSpeechRef.current = null;
+        handleSegmentEnd(playIdx);
+      };
+      utterance.onend = finishSpeech;
+      utterance.onerror = finishSpeech;
+      speechSynthesis.speak(utterance);
+      return;
+    }
+
+    if (!isPlaying) return;
+
+    if (nativeSpeechRef.current && typeof window !== "undefined") {
+      window.speechSynthesis?.cancel();
+      nativeSpeechRef.current = null;
+    }
 
     let audio = textAudioRefs.current[playIdx];
     if (!audio) {
@@ -95,18 +154,32 @@ export function BotMessageBody({
     });
 
     return () => { audio?.pause(); };
-  }, [playIdx, isPlaying]);
+  }, [playIdx, isPlaying, handleSegmentEnd]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   function handlePlayToggle() {
     if (segments.length === 0) return;
     if (playIdx !== -1 && isPlaying) {
       if (segments[playIdx]?.type === "text") {
-        textAudioRefs.current[playIdx]?.pause();
+        if (segments[playIdx]?.audioBase64) {
+          textAudioRefs.current[playIdx]?.pause();
+        } else {
+          window.speechSynthesis?.pause();
+        }
       }
       setIsPlaying(false);
     } else if (playIdx !== -1 && !isPlaying) {
       if (segments[playIdx]?.type === "text") {
-        textAudioRefs.current[playIdx]?.play().catch(() => {});
+        if (segments[playIdx]?.audioBase64) {
+          textAudioRefs.current[playIdx]?.play().catch(() => {});
+        } else {
+          window.speechSynthesis?.resume();
+        }
       }
       setIsPlaying(true);
     } else {
@@ -114,7 +187,9 @@ export function BotMessageBody({
     }
   }
 
-  const hasAudio = segments.some(s => s.type === "text" && s.audioBase64);
+  const hasAudio = segments.some(
+    s => s.type === "text" && (Boolean(s.audioBase64) || Boolean(s.text.trim()))
+  );
   const isCurrentlyPlaying = playIdx !== -1 && isPlaying;
 
   const [hadiLoading, setHadiLoading] = useState(false);
@@ -209,7 +284,10 @@ export function BotMessageBody({
       <div className="flex items-center gap-2 mt-3.5 flex-wrap">
         {hasAudio && (
           <button
+            type="button"
             onClick={handlePlayToggle}
+            aria-label={isCurrentlyPlaying ? "إيقاف صوت الرد" : "تشغيل صوت الرد"}
+            data-testid={`zakiy-speech-${msg.id}`}
             className="flex items-center gap-1.5 text-[11.5px] font-bold px-3.5 py-1.5 rounded-full transition-all active:scale-95"
             style={isCurrentlyPlaying
               ? { background: "linear-gradient(135deg,#0d9488,#059669)", color: "#fff", boxShadow: "0 2px 8px rgba(5,150,105,0.3)" }
