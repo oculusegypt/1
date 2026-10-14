@@ -6,13 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "scheme": "tawbah",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1a4731"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.aiservx.tawbah",
@@ -25,7 +19,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a4731"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.aiservx.tawbah",
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -51,6 +44,14 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Tawbah needs your location to calculate accurate prayer times for your area."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1a4731"
         }
       ],
       "expo-font"

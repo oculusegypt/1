@@ -1,1 +1,2 @@
 - [Worklets on Expo web](worklets-web-init.md) — keep the web-only platform-checker override; module evaluation order otherwise selects native serialization.
+- [Expo monorepo resolution](expo-monorepo-resolution.md) — keep root Expo, Expo Router, and Vite aligned with artifact dependencies under pnpm's hoisted linker.

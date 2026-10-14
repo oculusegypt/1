@@ -535,10 +535,10 @@ export default function QuranReadScreen() {
       {showTafsir && (
         <>
           <Animated.View
-            style={[StyleSheet.absoluteFillObject, { backgroundColor: "rgba(0,0,0,0.5)", zIndex: 10 }, overlayStyle]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.5)", zIndex: 10 }, overlayStyle]}
             pointerEvents="box-none"
           >
-            <Pressable style={StyleSheet.absoluteFillObject} onPress={closeTafsir} />
+            <Pressable style={StyleSheet.absoluteFill} onPress={closeTafsir} />
           </Animated.View>
 
           <GestureDetector gesture={sheetGesture}>

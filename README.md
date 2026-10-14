@@ -335,7 +335,7 @@ tawbah-guide/
 | **Backend** | Node.js, Express v5, TypeScript |
 | **Database** | PostgreSQL, Drizzle ORM |
 | **AI** | OpenAI GPT (via Replit AI Integrations) |
-| **Mobile** | Expo SDK 54, React Native, Expo Router |
+| **Mobile** | Expo SDK 57, React Native, Expo Router |
 | **Validation** | Zod, OpenAPI Codegen (Orval) |
 | **Monorepo** | pnpm workspaces |
 

@@ -201,10 +201,10 @@ workspace/
 | Database | PostgreSQL + Drizzle ORM |
 | Validation | Zod v4, drizzle-zod |
 | Web frontend | React 19, Vite 7, Tailwind CSS 4, Framer Motion |
-| Mobile | Expo SDK 54, Expo Router v4, NativeWind |
+| Mobile | Expo SDK 57, Expo Router 57.0.26, NativeWind |
 | AI / TTS | OpenAI GPT-4o via Replit AI Integrations proxy |
 | Web → Android | Capacitor 7 |
-| Mobile builds | EAS Build (Expo cloud) |
+| Mobile builds | Replit Expo Launch (iOS App Store) |
 | Auth | Better Auth (email/password + session) |
 | Push notifications | Web Push (VAPID) + FCM |
 

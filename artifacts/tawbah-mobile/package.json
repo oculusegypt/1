@@ -4,12 +4,12 @@
   "main": "expo-router/entry",
   "scripts": {
     "postinstall": "node scripts/patch-expo-router.js",
-    "dev": "node scripts/patch-expo-router.js && EXPO_ROUTER_APP_ROOT=/home/runner/workspace/artifacts/tawbah-mobile/app expo start --web --port 24800",
+    "dev": "node scripts/patch-expo-router.js && (create-launch login --session \"$REPLIT_EXPO_SESSION_SECRET\" || true) && EXPO_ROUTER_APP_ROOT=/home/runner/workspace/artifacts/tawbah-mobile/app BROWSER=none expo start --web --port 24800",
     "start": "node scripts/patch-expo-router.js && expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build": "echo 'Mobile build skipped — use EAS for native APK'",
+    "build": "echo \"Native APK builds are not configured; use Replit Expo Launch for iOS publishing\"",
     "serve": "npx serve dist --listen tcp://0.0.0.0:${PORT:-24800} --single",
     "typecheck": "tsc --noEmit"
   },
@@ -39,6 +39,7 @@
     "lucide-react-native": "^1.7.0",
     "nativewind": "^4.1.23",
     "react": "catalog:",
+    "react-dom": "catalog:",
     "react-native": "0.86.3",
     "react-native-gesture-handler": "^2.32.0",
     "react-native-reanimated": "~4.5.1",
@@ -50,11 +51,11 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@react-native/metro-config": "^0.85.0",
-    "@types/react": "~19.1.17",
-    "eas-cli": "^18.12.3",
+    "@react-native/metro-config": "^0.86.3",
+    "@types/react": "~19.2.14",
+    "create-launch": "0.4.1",
     "tailwindcss": "^3.4.17",
-    "typescript": "~5.9.2"
+    "typescript": "~6.0.3"
   },
   "private": true
 }
